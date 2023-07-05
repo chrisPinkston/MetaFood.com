@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Metafood</title>
+        <link rel="stylesheet" href="main.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.21/jquery.csv.min.js" integrity="sha512-Y8iWYJDo6HiTo5xtml1g4QqHtl/PO1w+dmUpQfQSOTqKNsMhExfyPN2ncNAe9JuJUSKzwK/b6oaNPop4MXzkwg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    </head>
+    <body>
+        <div class="overlay" id="overlay">
+            <form id="myForm">
+                <input type="file" id="csvFile" accept=".csv"/>
+                <br/>
+                <input type="submit" value="Submit"/>
+            </form>
+
+
+            <script>
+                var restaurantsByPostalCode = {}; // sorted by postal codes
+                fetch('data_200.csv')
+                    .then(response => response.text())
+                    .then(text => {
+                        var restaurants = $.csv.toObjects(text);
+                    
+                        for (let i = 1; i < 21; i++) {
+                            restaurantsByPostalCode[75000 + i] = [];
+                        }
+
+                        for (let i = 0; i < restaurants.length; i++) {
+                            var r = /\d{4,6}/g;
+                            var s = restaurants[i].address;
+                            let x = s.match(r);
+                            
+                            if (typeof restaurantsByPostalCode[parseInt(x)] != "undefined")
+                                restaurantsByPostalCode[parseInt(x)].push(restaurants[i]);
+                        }
+                        console.log(restaurantsByPostalCode);
+                    })
+
+                    // origial seach function
+
+                // function searchQ() {
+                //     var x = document.getElementById("city").value;
+                //      console.log(restaurantsByPostalCode[x]);
+                //     let biggestRestorantID = 0;
+                //     let biggestRating = 0;
+
+                //     for (let i = 0; i < restaurantsByPostalCode[x].length; i++) {
+                //         if (restaurantsByPostalCode[x][i].rating > biggestRating) {
+                //             biggestRestorantID = i;
+                //             biggestRating = restaurantsByPostalCode[x][i].rating;
+                //         }
+                //     };
+
+                //     let bestRestorant = restaurantsByPostalCode[x][biggestRestorantID];
+
+                //      let y = "<span>Name: " + bestRestorant.name + "</span><br />" +
+                //             "<span>Address: " + bestRestorant.address + "</span><br />" + 
+                //             "<span>Rating: " + bestRestorant.rating + "</span>";
+                //     document.getElementById("h2w").innerHTML = y;
+
+                // }
+
+            function searchNew() {
+                    var x = document.getElementById("city").value;
+                     console.log(restaurantsByPostalCode[x]);
+                    let biggestPoints = 0;
+                    let biggestRating = 0;
+                    let meanStars = 0;
+                    let sumStars = 0;
+                    let meanReviews = 0;
+                    let sumReviews = 0;
+                    let reviewsLength = restaurantsByPostalCode[x].length;
+                    let starsLength = restaurantsByPostalCode[x].length;
+ console.log(starsLength);
+
+                    // find the sum of reviews and stars
+                for (let i = 0; i < restaurantsByPostalCode[x].length; i++) {
+                        sumReviews = sumReviews + restaurantsByPostalCode[x][i].num_reviews;
+                        sumStars = sumStars + restaurantsByPostalCode[x][i].rating;
+
+                };
+                //console.log(sumReviews);
+                     meanStars = sumStars / reviewsLength;
+                    console.log(meanStars);
+                        meanReviews = sumReviews / starsLength;
+
+                        let differenceFromMeanSquaredReviews = 0;
+                        let differenceFromMeanSquaredStars = 0;
+
+                        let totalOfDifferencesSquaredReviews = 0;
+                        let totalOfDifferencesSquaredStars = 0;
+
+                        let reviewsSTD = 0;
+                        let starsSTD = 0;
+
+                        let avgOfDifferes1 = 0;
+                        let avgOfDifferes2 = 0;
+                        
+                        // standard deviation for loop
+                                for (let i = 0;i < restaurantsByPostalCode[x].length; i++){
+                                    
+                                    // find differrences of each restauraunts num of reviews and square it
+                                    differenceFromMeanSquaredReviews = (meanReviews - restaurantsByPostalCode[x][i].num_reviews) * (meanReviews - restaurantsByPostalCode[x][i].num_reviews);
+                                     // find differrences of each restauraunts num of stars and square it
+                                     differenceFromMeanSquaredStars = (meanStars - restaurantsByPostalCode[x][i].rating) * (meanStars - restaurantsByPostalCode[x][i].rating);
+
+
+                                     totalOfDifferencesSquaredReviews= totalOfDifferencesSquaredReviews + differenceFromMeanSquaredReviews;
+                                     totalOfDifferencesSquaredStars= totalOfDifferencesSquaredStars + differenceFromMeanSquaredReviews;
+                                };
+
+                                        // total of differences divided by the num of restaurants
+                                        let a = totalOfDifferencesSquaredReviews / restaurantsByPostalCode[x].length;
+                                        console.log(a);
+                                        // total of differences divided by the num of restaurants
+                                        let b = totalOfDifferencesSquaredStars / restaurantsByPostalCode[x].length;
+
+
+                                            // standard deviations for reviews
+                                           reviewsSTD = Math.sqrt(a);
+                                            // console.log(ST1);
+                                             // standard deviations for stars
+                                             starsSTD = Math.sqrt(b);
+
+                                            let points = [restaurantsByPostalCode[x].length];
+                                            let points1 = 0;
+                                            let p3 = 0;
+                                            let p4 = 0;
+
+
+                                                // find the diffrence between each num of reviews 
+                                                //and the standard deviation and add point system
+                                                 let bestRest = restaurantsByPostalCode[x][1];
+
+                                                for(let i = 0; i < restaurantsByPostalCode[x].length; i++){
+
+                                                        let p1 = totalOfDifferencesSquaredReviews - restaurantsByPostalCode[x][i].num_reviews;
+                                                        let p2 = totalOfDifferencesSquaredStars - restaurantsByPostalCode[x][i].rating;
+
+                                                        p3 = (p1 / reviewsSTD) * .5;
+                                                        p4 = p2 / reviewsSTD;
+                                                        points1 = p3+p4+10;
+                                                      //  points[i] = points1;
+                                                        bestRest = restaurantsByPostalCode[x][i];
+
+                                                            if (points[i] > biggestPoints){
+
+                                                                bestRest = restaurantsByPostalCode[x][i];
+
+                                                                biggestPoints = points[i];
+                                                            }
+
+                                                };
+
+                            //let bestr = bestRest;
+                            let y = "<span>Name: " + bestRest.name + "</span><br />" +
+                                    "<span>Address: " + bestRest.address + "</span><br />" + 
+                                    "<span>Rating: " + biggestPoints + "</span>";
+
+                            document.getElementById("h2w").innerHTML = y;
+
+                            let y2 = "<span> " + bestRest.website;
+                            document.getElementById("h3w").innerHTML = y2;
+
+            }
+
+            </script>
+
+            <h3>Searching now...</h3>
+        </div>
+        <div class="hero-bg">
+            <div class="navbar" >
+                <nav>
+                    <ul>
+                        <li><a class="français" href="">Feedback</a></li>
+                        <li><a href="">Contact</a></li>
+                        <li><a href="">About</a></li>
+                        <li><button class="language-btn">Language</button></li>
+                    </ul>
+                </nav>
+            </div>
+            <section class="top">
+                <header>
+                   <div class="titleMeta">
+                    <a href="#"><h1>METAFOOD</h1></a>
+                   </div>
+                </header>
+
+                <h1>
+                    <span>The Future</span>
+                    Eating Experience</h1>
+
+                <p>Find the best restauraunt in your area right now !
+                </p>
+
+                <div class="form-container">
+                    <form action="">
+                        <div class="form-left">
+                            <label for="city">Enter your zip code:</label>
+                            <input type="number" name="city" id="city">
+                            <p>Example: "75007"</p>
+                        </div>
+
+                        <input type="button" value="Find Best Food" id="cta-btn" onclick= "searchNew() "/>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <section class="authentic">
+            <div class="right-col">
+                <h2 id="h2w">Simple. Efficient.</h2>
+                <p id="h3w">Looking for the best restaurant near you but don't know what dish to choose ? Worry no more with the brand new MetaFood! With this website you are going to find exactly what you need in just one click away !</p>
+            </div>
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/2621168/food.jpg" alt="Picture of food in a bowl">
+        </section>
+    </body>
+</html>
